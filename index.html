@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML学習ツール</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #e0e7ff;
+      --success: #22c55e;
+      --success-light: #dcfce7;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --warning: #f59e0b;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,.07), 0 2px 4px -2px rgba(0,0,0,.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+      color: white;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(99,102,241,.3);
+    }
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    header p { font-size: 0.85rem; opacity: .85; margin-top: 2px; }
+
+    /* Progress bar */
+    .progress-wrap {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      opacity: .9;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,.3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: white;
+      border-radius: 99px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    /* ===== TAB NAV ===== */
+    .tab-nav {
+      display: flex;
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 14px 8px;
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all .2s;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    /* ===== CONTENT ===== */
+    .tab-content { display: none; padding: 24px 16px; max-width: 900px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    /* ===== LESSON TAB ===== */
+    .lesson-sidebar-wrap {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .lesson-list {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 80px;
+    }
+    .lesson-list-title {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .lesson-item {
+      padding: 11px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .15s;
+      color: var(--text-muted);
+    }
+    .lesson-item:last-child { border-bottom: none; }
+    .lesson-item:hover { background: var(--bg); }
+    .lesson-item.active { background: var(--primary-light); color: var(--primary-dark); font-weight: 600; }
+    .lesson-item.done .lesson-num { background: var(--success); color: white; }
+    .lesson-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Lesson content */
+    .lesson-panel { display: none; }
+    .lesson-panel.active { display: block; }
+
+    .lesson-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .lesson-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+    }
+    .lesson-title { font-size: 1.3rem; font-weight: 800; }
+    .lesson-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+    .lesson-section { margin-bottom: 20px; }
+    .lesson-section h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .lesson-section p { font-size: 0.95rem; line-height: 1.7; color: var(--text); }
+
+    /* Code block */
+    .code-block {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 10px;
+      padding: 16px 18px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 10px 0;
+      position: relative;
+    }
+    .code-tag { color: #93c5fd; }
+    .code-attr { color: #fca5a5; }
+    .code-val { color: #86efac; }
+    .code-comment { color: #94a3b8; font-style: italic; }
+    .code-text { color: #fef08a; }
+
+    /* Practice */
+    .practice-box {
+      background: #fafafa;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .practice-box p { font-size: 0.9rem; margin-bottom: 10px; }
+    .practice-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .practice-input:focus { border-color: var(--primary); }
+    .practice-feedback {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      min-height: 20px;
+    }
+    .feedback-ok { color: var(--success); }
+    .feedback-ng { color: var(--danger); }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-ghost { background: var(--border); color: var(--text); }
+    .btn-ghost:hover { background: #cbd5e1; }
+    .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ===== EDITOR TAB ===== */
+    .editor-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .editor-toolbar span { font-size: 0.8rem; color: var(--text-muted); margin-right: 4px; }
+    .editor-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      height: 500px;
+    }
+    .editor-pane {
+      display: flex;
+      flex-direction: column;
+    }
+    .pane-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pane-label::before {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .editor-pane:first-child .pane-label::before { background: #f97316; }
+    .editor-pane:last-child .pane-label::before { background: var(--success); }
+
+    #codeEditor {
+      flex: 1;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      resize: none;
+      outline: none;
+      background: var(--code-bg);
+      color: var(--code-text);
+      tab-size: 2;
+      transition: border-color .2s;
+    }
+    #codeEditor:focus { border-color: var(--primary); }
+    #previewFrame {
+      flex: 1;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: white;
+    }
+
+    /* ===== QUIZ TAB ===== */
+    .quiz-start { text-align: center; padding: 40px 20px; }
+    .quiz-start .big-icon { font-size: 4rem; margin-bottom: 16px; }
+    .quiz-start h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+    .quiz-start p { color: var(--text-muted); margin-bottom: 24px; }
+
+    .quiz-question-wrap { display: none; }
+    .quiz-result-wrap { display: none; text-align: center; padding: 40px 20px; }
+
+    .quiz-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .quiz-progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .quiz-progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 99px;
+      transition: width .3s ease;
+    }
+    .quiz-q {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+    .quiz-opt {
+      padding: 14px 18px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      cursor: pointer;
+      font-size: 0.95rem;
+      text-align: left;
+      font-family: inherit;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .quiz-opt:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-light); }
+    .quiz-opt.correct { border-color: var(--success); background: var(--success-light); color: #15803d; }
+    .quiz-opt.wrong { border-color: var(--danger); background: var(--danger-light); color: #b91c1c; }
+    .quiz-opt:disabled { cursor: default; }
+    .opt-badge {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .quiz-feedback {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.ok { background: var(--success-light); color: #15803d; }
+    .quiz-feedback.ng { background: var(--danger-light); color: #b91c1c; }
+    .quiz-next-btn { margin-top: 16px; width: 100%; padding: 14px; }
+
+    .result-score {
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .result-label { font-size: 1rem; color: var(--text-muted); margin: 8px 0 4px; }
+    .result-msg { font-size: 1.2rem; font-weight: 700; margin-bottom: 24px; }
+    .result-stars { font-size: 2rem; margin: 10px 0; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .lesson-sidebar-wrap { grid-template-columns: 1fr; }
+      .lesson-list { position: static; }
+      .editor-wrap { grid-template-columns: 1fr; height: auto; }
+      .editor-pane { height: 280px; }
+      header h1 { font-size: 1.2rem; }
+    }
+
+    /* Tag highlight in text */
+    code {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88em;
+      font-weight: 600;
+    }
+
+    .tip-box {
+      background: #fffbeb;
+      border-left: 4px solid var(--warning);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+    .tip-box strong { color: #92400e; }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <h1>🌐 HTML学習ツール</h1>
+  <p>初心者でも安心！ステップごとに楽しくHTMLを学ぼう</p>
+  <div class="progress-wrap">
+    <span>学習進捗</span>
+    <div class="progress-bar"><div class="progress-fill" id="globalProgress"></div></div>
+    <span id="progressLabel">0 / 8 レッスン</span>
+  </div>
+</header>
+
+<!-- ===== TAB NAV ===== -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('lesson')">📚 レッスン</button>
+  <button class="tab-btn" onclick="switchTab('editor')">✏️ エディタ</button>
+  <button class="tab-btn" onclick="switchTab('quiz')">🎯 クイズ</button>
+</nav>
+
+<!-- ===== LESSON TAB ===== -->
+<div id="tab-lesson" class="tab-content active">
+  <div class="lesson-sidebar-wrap">
+    <!-- Sidebar -->
+    <div class="lesson-list" id="lessonList">
+      <div class="lesson-list-title">レッスン一覧</div>
+      <!-- Generated by JS -->
+    </div>
+    <!-- Main panel -->
+    <div id="lessonMain"></div>
+  </div>
+</div>
+
+<!-- ===== EDITOR TAB ===== -->
+<div id="tab-editor" class="tab-content">
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="font-size:1.1rem;margin-bottom:6px;">✏️ ライブHTMLエディタ</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">左側にHTMLコードを入力すると、右側にリアルタイムでプレビューが表示されます。</p>
+  </div>
+  <div class="editor-toolbar">
+    <span>テンプレート：</span>
+    <button class="btn btn-ghost btn-sm" onclick="loadTemplate('blank')">空白</button>
+    <button class="btn btn-ghost btn-sm" onclick="loadTemplate('basic')">基本構造</button>
+    <button class="btn btn-ghost btn-sm" onclick="loadTemplate('card')">カード</button>
+    <button class="btn btn-ghost btn-sm" onclick="loadTemplate('form')">フォーム</button>
+    <button class="btn btn-ghost btn-sm" onclick="loadTemplate('list')">リスト</button>
+    <div style="margin-left:auto;">
+      <button class="btn btn-ghost btn-sm" onclick="clearEditor()">🗑 クリア</button>
+    </div>
+  </div>
+  <div class="editor-wrap">
+    <div class="editor-pane">
+      <div class="pane-label">HTMLコード</div>
+      <textarea id="codeEditor" placeholder="ここにHTMLを入力してください..." spellcheck="false"></textarea>
+    </div>
+    <div class="editor-pane">
+      <div class="pane-label">プレビュー</div>
+      <iframe id="previewFrame" sandbox="allow-scripts"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ===== QUIZ TAB ===== -->
+<div id="tab-quiz" class="tab-content">
+  <!-- Start screen -->
+  <div id="quizStart" class="quiz-start">
+    <div class="big-icon">🎯</div>
+    <h2>HTMLクイズに挑戦！</h2>
+    <p>10問の4択クイズでHTMLの知識を確認しよう。<br>各問題に正解すると1点もらえます。</p>
+    <button class="btn btn-primary" onclick="startQuiz()" style="font-size:1rem;padding:14px 32px;">
+      クイズをはじめる →
+    </button>
+  </div>
+  <!-- Question screen -->
+  <div id="quizQuestion" class="quiz-question-wrap">
+    <div class="quiz-meta">
+      <span id="quizQNum">問題 1 / 10</span>
+      <span id="quizScore">スコア: 0</span>
+    </div>
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizProgressFill"></div>
+    </div>
+    <div class="card">
+      <div class="quiz-q" id="quizQText"></div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+      <button class="btn btn-primary quiz-next-btn" id="quizNextBtn" onclick="nextQuizQuestion()" style="display:none;">
+        次の問題へ →
+      </button>
+    </div>
+  </div>
+  <!-- Result screen -->
+  <div id="quizResult" class="quiz-result-wrap">
+    <div class="result-score" id="resultScore"></div>
+    <div class="result-label">/ 10 点</div>
+    <div class="result-stars" id="resultStars"></div>
+    <div class="result-msg" id="resultMsg"></div>
+    <button class="btn btn-primary" onclick="startQuiz()" style="margin-right:8px;">もう一度挑戦</button>
+    <button class="btn btn-ghost" onclick="switchTab('lesson')">レッスンに戻る</button>
+  </div>
+</div>
+
+<script>
+// ===== LESSON DATA =====
+const lessons = [
+  {
+    icon: '🌐',
+    title: 'HTMLとは？',
+    subtitle: 'Webページの仕組みを知ろう',
+    explanation: `HTMLとは <strong>HyperText Markup Language</strong>（ハイパーテキスト・マークアップ・ランゲージ）の略です。<br><br>
+HTMLはWebページを作るための<strong>骨格</strong>となる言語です。ブラウザ（ChromeやSafariなど）はHTMLファイルを読み込んで、みなさんが見ているWebページを表示しています。<br><br>
+HTMLは<strong>タグ</strong>と呼ばれる特殊な記号を使って、文章の構造を表します。タグは <code>&lt;タグ名&gt;</code> のように書きます。`,
+    codeLabel: 'HTMLの基本的なタグの例',
+    code: `&lt;<span class="code-tag">h1</span>&gt;<span class="code-text">こんにちは！</span>&lt;/<span class="code-tag">h1</span>&gt;
+&lt;<span class="code-tag">p</span>&gt;<span class="code-text">これは段落です。</span>&lt;/<span class="code-tag">p</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong>タグは必ず「開始タグ」と「終了タグ」のペアで使います。終了タグは <code>&lt;/タグ名&gt;</code> のようにスラッシュ（/）をつけます。',
+    practice: {
+      question: '「HTML」の略語を英語で入力してください（大文字）',
+      answers: ['HyperText Markup Language', 'hypertext markup language'],
+      placeholder: 'HyperText ...'
+    }
+  },
+  {
+    icon: '🏗️',
+    title: 'HTMLの基本構造',
+    subtitle: 'すべてのページに必要な骨格',
+    explanation: `HTMLファイルには、必ず決まった<strong>基本構造</strong>があります。この構造を知ることで、正しいHTMLファイルが作れるようになります。<br><br>
+主な要素は次の4つです：<br>
+• <code>&lt;!DOCTYPE html&gt;</code>：このファイルがHTMLであることを宣言します<br>
+• <code>&lt;html&gt;</code>：HTMLの全体を囲むタグです<br>
+• <code>&lt;head&gt;</code>：ページのタイトルや設定を書く場所です（画面に表示されません）<br>
+• <code>&lt;body&gt;</code>：実際にブラウザに表示される内容を書く場所です`,
+    codeLabel: 'HTMLの基本構造',
+    code: `&lt;!DOCTYPE html&gt;
+&lt;<span class="code-tag">html</span> <span class="code-attr">lang</span>=<span class="code-val">"ja"</span>&gt;
+  &lt;<span class="code-tag">head</span>&gt;
+    &lt;<span class="code-tag">meta</span> <span class="code-attr">charset</span>=<span class="code-val">"UTF-8"</span>&gt;
+    &lt;<span class="code-tag">title</span>&gt;<span class="code-text">ページのタイトル</span>&lt;/<span class="code-tag">title</span>&gt;
+  &lt;/<span class="code-tag">head</span>&gt;
+  &lt;<span class="code-tag">body</span>&gt;
+    <span class="code-comment">&lt;!-- ここに内容を書く --&gt;</span>
+    &lt;<span class="code-tag">h1</span>&gt;<span class="code-text">はじめてのWebページ</span>&lt;/<span class="code-tag">h1</span>&gt;
+  &lt;/<span class="code-tag">body</span>&gt;
+&lt;/<span class="code-tag">html</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong>ブラウザに表示したい内容は必ず <code>&lt;body&gt;</code>の中に書きましょう。<code>&lt;head&gt;</code>の中に書いた内容は表示されません。',
+    practice: {
+      question: 'ブラウザに表示される内容を書く場所はどのタグの中ですか？',
+      answers: ['body', '<body>', '&lt;body&gt;'],
+      placeholder: 'タグ名を入力...'
+    }
+  },
+  {
+    icon: '📝',
+    title: '見出しと段落',
+    subtitle: 'テキストを整理して表示しよう',
+    explanation: `HTMLでテキストを表示するときに最もよく使うのが<strong>見出し</strong>と<strong>段落</strong>のタグです。<br><br>
+<strong>見出しタグ</strong>は <code>&lt;h1&gt;</code> ～ <code>&lt;h6&gt;</code> の6種類あります。数字が小さいほど大きな見出しになります。<br><br>
+<strong>段落タグ</strong> <code>&lt;p&gt;</code> は普通の文章（段落）を表します。ブログの記事や説明文などに使います。`,
+    codeLabel: '見出しと段落の使い方',
+    code: `&lt;<span class="code-tag">h1</span>&gt;<span class="code-text">一番大きな見出し</span>&lt;/<span class="code-tag">h1</span>&gt;
+&lt;<span class="code-tag">h2</span>&gt;<span class="code-text">二番目に大きな見出し</span>&lt;/<span class="code-tag">h2</span>&gt;
+&lt;<span class="code-tag">h3</span>&gt;<span class="code-text">三番目に大きな見出し</span>&lt;/<span class="code-tag">h3</span>&gt;
+
+&lt;<span class="code-tag">p</span>&gt;<span class="code-text">これは段落です。普通のテキストはpタグで囲みます。</span>&lt;/<span class="code-tag">p</span>&gt;
+&lt;<span class="code-tag">p</span>&gt;<span class="code-text">別の段落です。pタグごとに改行されます。</span>&lt;/<span class="code-tag">p</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong>見出しタグは見た目だけでなく、ページの「構造」を示す重要な役割があります。ページのタイトルには必ず <code>&lt;h1&gt;</code> を使いましょう。',
+    practice: {
+      question: '見出しタグで最も文字が大きく表示されるタグはどれですか？',
+      answers: ['h1', '<h1>', 'h1タグ'],
+      placeholder: 'タグ名を入力...'
+    }
+  },
+  {
+    icon: '🔗',
+    title: 'リンクと画像',
+    subtitle: 'Webを繋ぐ2つの重要なタグ',
+    explanation: `<strong>リンク（ハイパーリンク）</strong>は <code>&lt;a&gt;</code> タグで作ります。<code>href</code> 属性にリンク先のURLを指定します。<br><br>
+<strong>画像</strong>は <code>&lt;img&gt;</code> タグで表示します。<code>src</code> 属性に画像ファイルのパスを、<code>alt</code> 属性に画像の説明文を指定します。<br><br>
+<code>&lt;img&gt;</code> タグは終了タグ（<code>&lt;/img&gt;</code>）が不要な<strong>空要素</strong>です。`,
+    codeLabel: 'リンクと画像の書き方',
+    code: `<span class="code-comment">&lt;!-- リンク --&gt;</span>
+&lt;<span class="code-tag">a</span> <span class="code-attr">href</span>=<span class="code-val">"https://example.com"</span>&gt;<span class="code-text">クリックしてね</span>&lt;/<span class="code-tag">a</span>&gt;
+
+<span class="code-comment">&lt;!-- 別タブで開くリンク --&gt;</span>
+&lt;<span class="code-tag">a</span> <span class="code-attr">href</span>=<span class="code-val">"https://example.com"</span> <span class="code-attr">target</span>=<span class="code-val">"_blank"</span>&gt;<span class="code-text">別タブで開く</span>&lt;/<span class="code-tag">a</span>&gt;
+
+<span class="code-comment">&lt;!-- 画像 --&gt;</span>
+&lt;<span class="code-tag">img</span> <span class="code-attr">src</span>=<span class="code-val">"photo.jpg"</span> <span class="code-attr">alt</span>=<span class="code-val">"写真の説明"</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong><code>alt</code> 属性は画像が表示できないときに代わりに表示されるテキストです。目の不自由な方が使うスクリーンリーダーにも読み上げられるので、必ず書きましょう。',
+    practice: {
+      question: 'リンクを作るときに使うタグは何ですか？',
+      answers: ['a', '<a>', 'aタグ'],
+      placeholder: 'タグ名を入力...'
+    }
+  },
+  {
+    icon: '📋',
+    title: 'リスト',
+    subtitle: '箇条書きと番号付きリスト',
+    explanation: `HTMLには2種類のリストがあります。<br><br>
+<strong>順序なしリスト</strong>（箇条書き）：<code>&lt;ul&gt;</code> タグを使います。各項目は <code>&lt;li&gt;</code> タグで囲みます。<br><br>
+<strong>順序ありリスト</strong>（番号付き）：<code>&lt;ol&gt;</code> タグを使います。各項目は同じく <code>&lt;li&gt;</code> タグで囲みます。<br><br>
+<code>ul</code> は <strong>U</strong>nordered <strong>L</strong>ist（順序なし）、<code>ol</code> は <strong>O</strong>rdered <strong>L</strong>ist（順序あり）の略です。`,
+    codeLabel: '2種類のリスト',
+    code: `<span class="code-comment">&lt;!-- 順序なしリスト（箇条書き）--&gt;</span>
+&lt;<span class="code-tag">ul</span>&gt;
+  &lt;<span class="code-tag">li</span>&gt;<span class="code-text">りんご</span>&lt;/<span class="code-tag">li</span>&gt;
+  &lt;<span class="code-tag">li</span>&gt;<span class="code-text">バナナ</span>&lt;/<span class="code-tag">li</span>&gt;
+  &lt;<span class="code-tag">li</span>&gt;<span class="code-text">オレンジ</span>&lt;/<span class="code-tag">li</span>&gt;
+&lt;/<span class="code-tag">ul</span>&gt;
+
+<span class="code-comment">&lt;!-- 順序ありリスト（番号付き）--&gt;</span>
+&lt;<span class="code-tag">ol</span>&gt;
+  &lt;<span class="code-tag">li</span>&gt;<span class="code-text">まず水を沸かす</span>&lt;/<span class="code-tag">li</span>&gt;
+  &lt;<span class="code-tag">li</span>&gt;<span class="code-text">麺を入れる</span>&lt;/<span class="code-tag">li</span>&gt;
+  &lt;<span class="code-tag">li</span>&gt;<span class="code-text">3分待つ</span>&lt;/<span class="code-tag">li</span>&gt;
+&lt;/<span class="code-tag">ol</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong>リストの各項目（<code>&lt;li&gt;</code>）は必ず <code>&lt;ul&gt;</code> または <code>&lt;ol&gt;</code> の中に入れましょう。直接 <code>&lt;li&gt;</code> を書くと正しく表示されません。',
+    practice: {
+      question: '番号付きリストに使うタグはどれですか？',
+      answers: ['ol', '<ol>', 'olタグ'],
+      placeholder: 'タグ名を入力...'
+    }
+  },
+  {
+    icon: '📊',
+    title: 'テーブル（表）',
+    subtitle: 'データを表形式で表示しよう',
+    explanation: `HTMLでデータを表形式で表示するには<strong>テーブル</strong>を使います。<br><br>
+• <code>&lt;table&gt;</code>：テーブル全体を囲むタグ<br>
+• <code>&lt;tr&gt;</code>：Table Row（行）を表すタグ<br>
+• <code>&lt;th&gt;</code>：Table Header（見出しセル）。太字で表示される<br>
+• <code>&lt;td&gt;</code>：Table Data（データセル）。通常のセル<br><br>
+テーブルは「行（<code>&lt;tr&gt;</code>）の中にセル（<code>&lt;th&gt;</code>や<code>&lt;td&gt;</code>）を並べる」という構造です。`,
+    codeLabel: 'テーブルの作り方',
+    code: `&lt;<span class="code-tag">table</span>&gt;
+  &lt;<span class="code-tag">tr</span>&gt;
+    &lt;<span class="code-tag">th</span>&gt;<span class="code-text">名前</span>&lt;/<span class="code-tag">th</span>&gt;
+    &lt;<span class="code-tag">th</span>&gt;<span class="code-text">年齢</span>&lt;/<span class="code-tag">th</span>&gt;
+  &lt;/<span class="code-tag">tr</span>&gt;
+  &lt;<span class="code-tag">tr</span>&gt;
+    &lt;<span class="code-tag">td</span>&gt;<span class="code-text">田中さん</span>&lt;/<span class="code-tag">td</span>&gt;
+    &lt;<span class="code-tag">td</span>&gt;<span class="code-text">25歳</span>&lt;/<span class="code-tag">td</span>&gt;
+  &lt;/<span class="code-tag">tr</span>&gt;
+  &lt;<span class="code-tag">tr</span>&gt;
+    &lt;<span class="code-tag">td</span>&gt;<span class="code-text">山田さん</span>&lt;/<span class="code-tag">td</span>&gt;
+    &lt;<span class="code-tag">td</span>&gt;<span class="code-text">32歳</span>&lt;/<span class="code-tag">td</span>&gt;
+  &lt;/<span class="code-tag">tr</span>&gt;
+&lt;/<span class="code-tag">table</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong><code>&lt;th&gt;</code> は見出しセルなので、テーブルの最初の行（ヘッダー行）に使いましょう。<code>&lt;td&gt;</code> はデータ行に使います。',
+    practice: {
+      question: 'テーブルの「行」を表すタグはどれですか？',
+      answers: ['tr', '<tr>', 'trタグ'],
+      placeholder: 'タグ名を入力...'
+    }
+  },
+  {
+    icon: '📮',
+    title: 'フォーム',
+    subtitle: 'ユーザーの入力を受け付けよう',
+    explanation: `<strong>フォーム</strong>はユーザーが情報を入力してサーバーに送るための仕組みです。お問い合わせフォームやログイン画面などで使われます。<br><br>
+• <code>&lt;form&gt;</code>：フォーム全体を囲むタグ<br>
+• <code>&lt;input&gt;</code>：入力フィールド。<code>type</code> 属性で種類を変える<br>
+• <code>&lt;label&gt;</code>：入力欄の説明ラベル<br>
+• <code>&lt;button&gt;</code>：ボタン<br><br>
+<code>input</code> の <code>type</code> には <code>text</code>（テキスト）、<code>email</code>（メール）、<code>password</code>（パスワード）、<code>checkbox</code>（チェックボックス）などがあります。`,
+    codeLabel: 'フォームの作り方',
+    code: `&lt;<span class="code-tag">form</span>&gt;
+  &lt;<span class="code-tag">label</span>&gt;<span class="code-text">名前：</span>&lt;/<span class="code-tag">label</span>&gt;
+  &lt;<span class="code-tag">input</span> <span class="code-attr">type</span>=<span class="code-val">"text"</span> <span class="code-attr">placeholder</span>=<span class="code-val">"山田 太郎"</span>&gt;
+
+  &lt;<span class="code-tag">label</span>&gt;<span class="code-text">メール：</span>&lt;/<span class="code-tag">label</span>&gt;
+  &lt;<span class="code-tag">input</span> <span class="code-attr">type</span>=<span class="code-val">"email"</span> <span class="code-attr">placeholder</span>=<span class="code-val">"example@mail.com"</span>&gt;
+
+  &lt;<span class="code-tag">button</span> <span class="code-attr">type</span>=<span class="code-val">"submit"</span>&gt;<span class="code-text">送信する</span>&lt;/<span class="code-tag">button</span>&gt;
+&lt;/<span class="code-tag">form</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong><code>&lt;input&gt;</code> タグは終了タグが不要な空要素です。<code>placeholder</code> 属性を使うと、入力欄に薄いヒントテキストを表示できます。',
+    practice: {
+      question: 'フォーム全体を囲むタグはどれですか？',
+      answers: ['form', '<form>', 'formタグ'],
+      placeholder: 'タグ名を入力...'
+    }
+  },
+  {
+    icon: '🎨',
+    title: 'スタイルとクラス',
+    subtitle: 'HTMLに見た目を加えよう',
+    explanation: `HTMLの見た目を変えるには主に2つの方法があります。<br><br>
+<strong>① style属性</strong>：タグに直接スタイルを書く方法です。<br>
+<code>&lt;p style="color: red;"&gt;</code> のように書きます。<br><br>
+<strong>② class属性</strong>：タグにクラス名をつけて、CSSで一括してスタイルを適用する方法です。本格的なWebサイトではこちらが主流です。<br><br>
+スタイルの書き方（CSS）：<code>プロパティ: 値;</code>。例：<code>color: blue;</code>（文字色）、<code>font-size: 20px;</code>（文字サイズ）`,
+    codeLabel: 'スタイルの適用例',
+    code: `<span class="code-comment">&lt;!-- style属性で直接スタイルを書く --&gt;</span>
+&lt;<span class="code-tag">p</span> <span class="code-attr">style</span>=<span class="code-val">"color: blue; font-size: 18px;"</span>&gt;
+  <span class="code-text">青い文字のテキスト</span>
+&lt;/<span class="code-tag">p</span>&gt;
+
+<span class="code-comment">&lt;!-- classを使ってスタイルを適用 --&gt;</span>
+&lt;<span class="code-tag">style</span>&gt;
+  .highlight { background: yellow; padding: 4px; }
+&lt;/<span class="code-tag">style</span>&gt;
+
+&lt;<span class="code-tag">p</span> <span class="code-attr">class</span>=<span class="code-val">"highlight"</span>&gt;<span class="code-text">黄色い背景のテキスト</span>&lt;/<span class="code-tag">p</span>&gt;`,
+    tip: '<strong>💡 ポイント：</strong>実際のWebサイトでは <code>style</code> 属性よりも <code>class</code> 属性 + CSSファイルを使うのが一般的です。同じスタイルを複数の場所に簡単に適用できます。',
+    practice: {
+      question: '文字の色を変えるCSSプロパティ名は何ですか？',
+      answers: ['color', 'color:', 'color: '],
+      placeholder: 'プロパティ名を入力...'
+    }
+  }
+];
+
+// ===== QUIZ DATA =====
+const quizData = [
+  { q: 'HTMLの「H」は何の略ですか？', options: ['HyperText', 'HighText', 'HomePage', 'HardText'], correct: 0, explanation: 'HTMLは「HyperText Markup Language」の略です。' },
+  { q: 'ページの本文（画面に表示する内容）を書く場所はどのタグの中ですか？', options: ['<body>', '<head>', '<html>', '<title>'], correct: 0, explanation: '<body>タグの中に、ブラウザに表示したい内容を書きます。' },
+  { q: '最も大きな見出しタグはどれですか？', options: ['<h1>', '<h6>', '<h3>', '<h0>'], correct: 0, explanation: '<h1>が最大の見出しです。数字が小さいほど大きい見出しになります。' },
+  { q: 'リンクを作るために使うタグはどれですか？', options: ['<a>', '<link>', '<href>', '<url>'], correct: 0, explanation: '<a>タグ（アンカータグ）でリンクを作ります。href属性にURLを指定します。' },
+  { q: '画像を表示するタグはどれですか？', options: ['<img>', '<image>', '<pic>', '<photo>'], correct: 0, explanation: '<img>タグで画像を表示します。src属性に画像ファイルのパスを指定します。' },
+  { q: '番号のない箇条書きリストに使うタグはどれですか？', options: ['<ul>', '<ol>', '<li>', '<list>'], correct: 0, explanation: '<ul>（Unordered List）が順序なし（箇条書き）リストです。' },
+  { q: '番号付きリストに使うタグはどれですか？', options: ['<ol>', '<ul>', '<li>', '<nl>'], correct: 0, explanation: '<ol>（Ordered List）が番号付きリストです。' },
+  { q: 'リストの各項目に使うタグはどれですか？', options: ['<li>', '<item>', '<dt>', '<dd>'], correct: 0, explanation: '<li>（List Item）がリストの各項目タグです。<ul>または<ol>の中に入れます。' },
+  { q: 'テーブルの「行」を表すタグはどれですか？', options: ['<tr>', '<td>', '<th>', '<row>'], correct: 0, explanation: '<tr>（Table Row）がテーブルの行タグです。' },
+  { q: 'テーブルの「見出しセル」を表すタグはどれですか？', options: ['<th>', '<td>', '<tr>', '<thead>'], correct: 0, explanation: '<th>（Table Header）が見出しセルです。太字で表示されます。' },
+  { q: 'フォームで1行テキストを入力させるには？', options: ['<input type="text">', '<input type="area">', '<textarea>', '<textbox>'], correct: 0, explanation: '<input type="text">で1行テキスト入力欄を作ります。' },
+  { q: 'HTMLコメントの正しい書き方はどれですか？', options: ['<!-- コメント -->', '// コメント', '/* コメント */', '# コメント'], correct: 0, explanation: 'HTMLのコメントは <!-- と --> で囲みます。' },
+  { q: '文字を太字にするタグはどれですか？', options: ['<strong>', '<bold>', '<b>', '<fat>'], correct: 0, explanation: '<strong>タグで文字を太字（強調）にできます。' },
+  { q: 'ページのタイトル（タブに表示される名前）を設定するタグは？', options: ['<title>', '<name>', '<label>', '<header>'], correct: 0, explanation: '<head>内の<title>タグでページのタイトルを設定します。' },
+  { q: '改行を表すタグはどれですか？', options: ['<br>', '<break>', '<newline>', '<nl>'], correct: 0, explanation: '<br>タグで強制改行できます。終了タグは不要です。' },
+];
+
+// ===== STATE =====
+let currentLesson = 0;
+let completedLessons = new Set();
+let quizQuestions = [];
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+
+// ===== TAB SWITCHING =====
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    if (['lesson','editor','quiz'][i] === name) btn.classList.add('active');
+  });
+}
+
+// ===== LESSON INIT =====
+function initLessons() {
+  const list = document.getElementById('lessonList');
+  const main = document.getElementById('lessonMain');
+
+  // Sidebar items
+  lessons.forEach((lesson, i) => {
+    const item = document.createElement('div');
+    item.className = 'lesson-item' + (i === 0 ? ' active' : '');
+    item.id = 'lesson-item-' + i;
+    item.onclick = () => showLesson(i);
+    item.innerHTML = `<div class="lesson-num">${i + 1}</div><span>${lesson.title}</span>`;
+    list.appendChild(item);
+  });
+
+  // Lesson panels
+  lessons.forEach((lesson, i) => {
+    const panel = document.createElement('div');
+    panel.className = 'lesson-panel' + (i === 0 ? ' active' : '');
+    panel.id = 'lesson-panel-' + i;
+    panel.innerHTML = `
+      <div class="lesson-header">
+        <div class="lesson-icon">${lesson.icon}</div>
+        <div>
+          <div class="lesson-title">レッスン ${i + 1}：${lesson.title}</div>
+          <div class="lesson-subtitle">${lesson.subtitle}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="lesson-section">
+          <h3>📖 解説</h3>
+          <p>${lesson.explanation}</p>
+        </div>
+
+        <div class="lesson-section">
+          <h3>💻 ${lesson.codeLabel}</h3>
+          <div class="code-block">${lesson.code}</div>
+        </div>
+
+        <div class="tip-box">${lesson.tip}</div>
+      </div>
+
+      <div class="card">
+        <div class="lesson-section">
+          <h3>✍️ 練習問題</h3>
+          <div class="practice-box">
+            <p>${lesson.practice.question}</p>
+            <input type="text"
+              class="practice-input"
+              placeholder="${lesson.practice.placeholder}"
+              id="practice-input-${i}"
+              oninput="checkPractice(${i})"
+            >
+            <div class="practice-feedback" id="practice-feedback-${i}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lesson-nav">
+        ${i > 0 ? `<button class="btn btn-ghost" onclick="showLesson(${i - 1})">← 前のレッスン</button>` : '<div></div>'}
+        ${i < lessons.length - 1
+          ? `<button class="btn btn-primary" onclick="showLesson(${i + 1})">次のレッスン →</button>`
+          : `<button class="btn btn-success" onclick="switchTab('quiz')">🎯 クイズに挑戦！</button>`
+        }
+      </div>
+    `;
+    main.appendChild(panel);
+  });
+}
+
+function showLesson(index) {
+  document.querySelectorAll('.lesson-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.lesson-item').forEach(p => p.classList.remove('active'));
+  document.getElementById('lesson-panel-' + index).classList.add('active');
+  document.getElementById('lesson-item-' + index).classList.add('active');
+  currentLesson = index;
+}
+
+function checkPractice(index) {
+  const input = document.getElementById('practice-input-' + index);
+  const feedback = document.getElementById('practice-feedback-' + index);
+  const val = input.value.trim().toLowerCase();
+  const answers = lessons[index].practice.answers.map(a => a.toLowerCase());
+
+  if (answers.some(a => val === a || val === a.replace(/<\/?[^>]+>/g, ''))) {
+    feedback.textContent = '✅ 正解！すばらしい！';
+    feedback.className = 'practice-feedback feedback-ok';
+    if (!completedLessons.has(index)) {
+      completedLessons.add(index);
+      document.getElementById('lesson-item-' + index).classList.add('done');
+      updateProgress();
+    }
+  } else if (val.length > 0) {
+    feedback.textContent = '❌ もう一度考えてみよう。';
+    feedback.className = 'practice-feedback feedback-ng';
+  } else {
+    feedback.textContent = '';
+    feedback.className = 'practice-feedback';
+  }
+}
+
+function updateProgress() {
+  const pct = (completedLessons.size / lessons.length) * 100;
+  document.getElementById('globalProgress').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${completedLessons.size} / ${lessons.length} レッスン`;
+}
+
+// ===== EDITOR =====
+const templates = {
+  blank: '',
+  basic: `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>はじめてのページ</title>
+</head>
+<body>
+  <h1>こんにちは！</h1>
+  <p>私のはじめてのWebページです。</p>
+</body>
+</html>`,
+  card: `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f0f4f8; padding: 20px; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    }
+    h2 { color: #6366f1; margin-bottom: 8px; }
+    p { color: #555; line-height: 1.6; }
+    .badge {
+      display: inline-block;
+      background: #e0e7ff;
+      color: #6366f1;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">HTML学習中</span>
+    <h2>山田 太郎</h2>
+    <p>Webデザインを勉強中の23歳です。<br>
+    趣味は読書とプログラミングです。</p>
+  </div>
+</body>
+</html>`,
+  form: `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f0f4f8; padding: 20px; }
+    form {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    }
+    h2 { margin-bottom: 20px; color: #333; }
+    label { display: block; font-size: 14px; color: #555; margin-bottom: 4px; }
+    input {
+      width: 100%; padding: 10px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px; font-size: 14px;
+      margin-bottom: 16px; box-sizing: border-box;
+    }
+    input:focus { outline: none; border-color: #6366f1; }
+    button {
+      width: 100%; padding: 12px;
+      background: #6366f1; color: white;
+      border: none; border-radius: 8px;
+      font-size: 16px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <form>
+    <h2>📮 お問い合わせ</h2>
+    <label>お名前</label>
+    <input type="text" placeholder="山田 太郎">
+    <label>メールアドレス</label>
+    <input type="email" placeholder="example@mail.com">
+    <label>メッセージ</label>
+    <input type="text" placeholder="ご質問をどうぞ">
+    <button type="submit">送信する</button>
+  </form>
+</body>
+</html>`,
+  list: `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 500px; }
+    h2 { color: #6366f1; }
+    ul { list-style: none; padding: 0; }
+    ul li::before { content: "✅ "; }
+    ol li { margin: 8px 0; }
+    li { padding: 6px 0; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h2>📋 今日のTODO</h2>
+  <ul>
+    <li>朝食を食べる</li>
+    <li>HTMLを勉強する</li>
+    <li>散歩に行く</li>
+  </ul>
+
+  <h2>🍜 ラーメンの作り方</h2>
+  <ol>
+    <li>鍋に水を入れて沸かす</li>
+    <li>スープを入れる</li>
+    <li>麺を3分ゆでる</li>
+    <li>具材をトッピングして完成！</li>
+  </ol>
+</body>
+</html>`
+};
+
+function loadTemplate(name) {
+  document.getElementById('codeEditor').value = templates[name];
+  updatePreview();
+}
+
+function clearEditor() {
+  document.getElementById('codeEditor').value = '';
+  updatePreview();
+}
+
+function updatePreview() {
+  const code = document.getElementById('codeEditor').value;
+  const frame = document.getElementById('previewFrame');
+  const doc = frame.contentDocument || frame.contentWindow.document;
+  doc.open();
+  doc.write(code);
+  doc.close();
+}
+
+document.getElementById('codeEditor').addEventListener('input', updatePreview);
+
+// ===== QUIZ =====
+function startQuiz() {
+  // Shuffle and pick 10
+  quizQuestions = [...quizData].sort(() => Math.random() - .5).slice(0, 10);
+  quizIndex = 0;
+  quizScore = 0;
+
+  document.getElementById('quizStart').style.display = 'none';
+  document.getElementById('quizResult').style.display = 'none';
+  document.getElementById('quizQuestion').style.display = 'block';
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = quizQuestions[quizIndex];
+  quizAnswered = false;
+
+  document.getElementById('quizQNum').textContent = `問題 ${quizIndex + 1} / 10`;
+  document.getElementById('quizScore').textContent = `スコア: ${quizScore}`;
+  document.getElementById('quizProgressFill').style.width = `${(quizIndex / 10) * 100}%`;
+  document.getElementById('quizQText').textContent = q.q;
+  document.getElementById('quizFeedback').className = 'quiz-feedback';
+  document.getElementById('quizNextBtn').style.display = 'none';
+
+  const labels = ['A', 'B', 'C', 'D'];
+  // Shuffle options with original index tracking
+  const optionsWithIdx = q.options.map((opt, i) => ({ opt, orig: i }));
+  optionsWithIdx.sort(() => Math.random() - .5);
+
+  const container = document.getElementById('quizOptions');
+  container.innerHTML = '';
+  optionsWithIdx.forEach((item, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.innerHTML = `<span class="opt-badge">${labels[i]}</span>${item.opt}`;
+    btn.onclick = () => selectAnswer(item.orig === q.correct, btn, container, q.explanation);
+    container.appendChild(btn);
+  });
+}
+
+function selectAnswer(isCorrect, clickedBtn, container, explanation) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+
+  // Disable all buttons
+  container.querySelectorAll('.quiz-opt').forEach(btn => btn.disabled = true);
+
+  if (isCorrect) {
+    clickedBtn.classList.add('correct');
+    quizScore++;
+  } else {
+    clickedBtn.classList.add('wrong');
+    // Highlight correct - but we already shuffled, so mark the correct one among all
+    // We need to find correct: iterate to find the button with correct original index
+  }
+
+  const feedback = document.getElementById('quizFeedback');
+  feedback.className = 'quiz-feedback show ' + (isCorrect ? 'ok' : 'ng');
+  feedback.textContent = (isCorrect ? '✅ 正解！ ' : '❌ 不正解… ') + explanation;
+
+  document.getElementById('quizScore').textContent = `スコア: ${quizScore}`;
+  document.getElementById('quizNextBtn').style.display = 'block';
+  document.getElementById('quizNextBtn').textContent =
+    quizIndex < 9 ? '次の問題へ →' : '結果を見る →';
+}
+
+function nextQuizQuestion() {
+  quizIndex++;
+  if (quizIndex >= 10) {
+    showResult();
+  } else {
+    showQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quizQuestion').style.display = 'none';
+  document.getElementById('quizResult').style.display = 'block';
+
+  document.getElementById('resultScore').textContent = quizScore;
+  const stars = quizScore >= 9 ? '⭐⭐⭐' : quizScore >= 7 ? '⭐⭐' : '⭐';
+  const msgs = {
+    high: ['すばらしい！完璧です！🎉', 'HTMLマスターに近づいています！', '大変よくできました！'],
+    mid: ['よくできました！もう少しで完璧！', '惜しい！復習してもう一度挑戦しよう', 'いい感じです！'],
+    low: ['もう一度レッスンを復習しよう！', '大丈夫！練習あるのみ！', 'コツコツ頑張ろう！']
+  };
+  const msgGroup = quizScore >= 9 ? msgs.high : quizScore >= 6 ? msgs.mid : msgs.low;
+  document.getElementById('resultStars').textContent = stars;
+  document.getElementById('resultMsg').textContent = msgGroup[Math.floor(Math.random() * msgGroup.length)];
+}
+
+// ===== INIT =====
+initLessons();
+loadTemplate('basic');
+</script>
+</body>
+</html>
